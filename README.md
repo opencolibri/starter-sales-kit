@@ -14,7 +14,7 @@ package of the monorepo, and drives the import tasks of `opencolibri/starter-imp
 | Part | Where |
 |---|---|
 | castor-api client, shop images and `project.yaml` storage, run progress | `src/Castor/`, `src/Import/` |
-| Pages: dashboard figures, shops, datasets, Caddy on-demand TLS endpoint | `src/Controller/`, `templates/` |
+| Pages: dashboard figures, shops, datasets, Caddy on-demand TLS endpoint, theme thumbnails (from opencolibri/starter-themes) | `src/Controller/`, `templates/` |
 | Live components (`SalesKit:RunMonitor`, `ShopActions`, `ShopVisibility`, `ThemePicker`, `DeleteShop`) | `src/Twig/Components/` |
 | Sidebar items (Dashboard, Shops, Datasets) | `src/Menu/AdminMenuBuilder.php` (decorates `sylius_admin_ui.knp.menu_builder`) |
 | Hooks of every page, plus the Shadcn Admin UI hooks | `config/app.php` |

@@ -24,6 +24,7 @@
         "php": ">=8.3",
         "knplabs/knp-menu-bundle": "^3.0",
         "opencolibri/starter-core": "self.version",
+        "opencolibri/starter-themes": "self.version",
         "pagerfanta/core": "^4.6",
         "sylius/admin-ui": "^0.14",
         "sylius/grid-bundle": "^1.13",

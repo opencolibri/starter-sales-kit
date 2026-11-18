@@ -9,6 +9,7 @@ opencolibri_sales_kit:
         build_dataset: 'Build dataset'
         channel: 'Channel'
         collections: 'Collections'
+        configure: 'Configure'
         create_a_shop: 'Create a shop'
         create_ai_catalog: 'Create an AI catalog'
         create_shop: 'Create shop'

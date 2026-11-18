@@ -1,0 +1,6 @@
+{% set shop = hookable_metadata.context.shop %}
+{% set themes = hookable_metadata.context.themes %}
+
+{% if themes %}
+    {{ component('SalesKit:ThemePicker', {project: shop.slug, themes: themes, current: shop.theme|default('default')}) }}
+{% endif %}

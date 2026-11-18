@@ -1,0 +1,289 @@
+<?php
+
+declare(strict_types=1);
+
+namespace OpenColibri\Starter\SalesKit\Controller;
+
+use OpenColibri\Starter\SalesKit\Castor\CastorApiClient;
+use OpenColibri\Starter\SalesKit\Form\ShopCreateType;
+use OpenColibri\Starter\SalesKit\Form\ShopProjectAiType;
+use OpenColibri\Starter\SalesKit\Form\ShopProjectExistingType;
+use OpenColibri\Starter\SalesKit\Form\ShopSettingsType;
+use OpenColibri\Starter\SalesKit\Grid\ShopGrid;
+use OpenColibri\Starter\SalesKit\Import\ProjectConfigStorage;
+use OpenColibri\Starter\SalesKit\Import\ShopImageStorage;
+use Sylius\Component\Grid\Parameters;
+use Sylius\Component\Grid\Provider\GridProviderInterface;
+use Sylius\Component\Grid\View\GridViewFactoryInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\SubmitButton;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class ShopController extends AbstractController
+{
+    public function __construct(
+        private readonly CastorApiClient $castorApi,
+        private readonly ShopImageStorage $shopImageStorage,
+        private readonly ProjectConfigStorage $projectConfigStorage,
+        private readonly GridProviderInterface $gridProvider,
+        private readonly GridViewFactoryInterface $gridViewFactory,
+    ) {}
+
+    #[Route('/shops', name: 'opencolibri_sales_kit_shop_index')]
+    public function index(Request $request): Response
+    {
+        try {
+            $resources = $this->gridViewFactory->create(
+                $this->gridProvider->get(ShopGrid::NAME),
+                new Parameters($request->query->all()),
+            );
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+            $resources = null;
+        }
+
+        return $this->render('@OpenColibriStarterSalesKit/shop/index.html.twig', [
+            'resources' => $resources,
+        ]);
+    }
+
+    #[Route('/shops/new', name: 'opencolibri_sales_kit_shop_new')]
+    public function new(Request $request): Response
+    {
+        try {
+            $datasets = $this->castorApi->listDatasets();
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('opencolibri_sales_kit_shop_index');
+        }
+
+        if ([] === $datasets) {
+            $this->addFlash('error', 'Create a dataset first: a shop is created from a dataset.');
+
+            return $this->redirectToRoute('opencolibri_sales_kit_dataset_index');
+        }
+
+        $choices = [];
+
+        foreach ($datasets as $dataset) {
+            $choices[\sprintf('%s (%d products)', (string) ($dataset['name'] ?? ''), (int) ($dataset['productCount'] ?? 0))] = (string) ($dataset['slug'] ?? '');
+        }
+
+        $form = $this->createForm(ShopCreateType::class, ['dataset' => $request->query->getString('dataset') ?: null], ['datasets' => $choices]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            /** @var array{dataset: string, name: string, description: ?string} $data */
+            $data = $form->getData();
+
+            try {
+                $slug = $this->shopImageStorage->slugFromName($data['name']);
+                $this->castorApi->run('sylius:import:shop:create', [
+                    'dataset' => $data['dataset'],
+                    'project' => $slug,
+                    'name' => $data['name'],
+                    'description' => (string) $data['description'],
+                ]);
+                $this->saveOptionalImages($slug, $form);
+                $this->projectConfigStorage->refreshShopImagesFlags($slug);
+            } catch (\InvalidArgumentException|\RuntimeException $exception) {
+                $this->addFlash('error', $exception->getMessage());
+
+                return $this->redirectToRoute('opencolibri_sales_kit_shop_new', ['dataset' => $data['dataset']]);
+            }
+
+            $this->addFlash('success', 'Shop created: generate its fixtures, then load them into Sylius.');
+
+            return $this->redirectToRoute('opencolibri_sales_kit_shop_show', ['slug' => $slug]);
+        }
+
+        return $this->render('@OpenColibriStarterSalesKit/shop/new.html.twig', [
+            'form' => $form,
+            'datasets' => $datasets,
+        ]);
+    }
+
+    #[Route('/shops/{slug}', name: 'opencolibri_sales_kit_shop_show')]
+    public function show(string $slug): Response
+    {
+        $shop = $this->findShop($slug);
+        $isAi = 'ai' === (string) ($shop['mode'] ?? 'existing');
+
+        $projectForm = $this->createProjectForm($shop, $slug, $isAi, [
+            'action' => $this->generateUrl('opencolibri_sales_kit_shop_project', ['slug' => $slug]),
+            'method' => 'POST',
+        ]);
+
+        return $this->render('@OpenColibriStarterSalesKit/shop/show.html.twig', [
+            'shop' => $shop,
+            'projectForm' => $projectForm,
+            'themes' => $this->listThemes(),
+        ]);
+    }
+
+    #[Route('/shops/{slug}/project', name: 'opencolibri_sales_kit_shop_project', methods: ['POST'])]
+    public function project(Request $request, string $slug): Response
+    {
+        $shop = $this->findShop($slug);
+        $isAi = 'ai' === (string) ($shop['mode'] ?? 'existing');
+
+        $form = $this->createProjectForm($shop, $slug, $isAi);
+        $form->handleRequest($request);
+
+        if (!$form->isSubmitted() || !$form->isValid()) {
+            $this->addFlash('error', 'Invalid form submission.');
+
+            return $this->redirectToRoute('opencolibri_sales_kit_shop_show', ['slug' => $slug]);
+        }
+
+        /** @var array<string, mixed> $data */
+        $data = $form->getData();
+
+        try {
+            $this->saveOptionalImages($slug, $form);
+            $settings = $this->extractProjectSettings($data);
+
+            $refetchButton = $form->has('refetch') ? $form->get('refetch') : null;
+            if ($refetchButton instanceof SubmitButton && $refetchButton->isClicked()) {
+                return $this->startProjectImport($slug, $isAi, $settings, $data);
+            }
+
+            // The settings of a shop created from a dataset have no URL: keep the dataset one.
+            $this->projectConfigStorage->updateSettings($slug, $form->has('url') ? $settings : array_diff_key($settings, ['url' => true]));
+            $this->addFlash('success', 'Shop settings updated.');
+        } catch (\InvalidArgumentException|\RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('opencolibri_sales_kit_shop_show', ['slug' => $slug]);
+    }
+
+    /**
+     * @param array<string, mixed> $shop
+     * @param array<string, mixed> $options
+     */
+    private function createProjectForm(array $shop, string $slug, bool $isAi, array $options = []): FormInterface
+    {
+        $defaults = [
+            'name' => (string) ($shop['name'] ?? $slug),
+            'url' => (string) ($shop['url'] ?? ''),
+            'description' => (string) ($shop['description'] ?? ''),
+        ];
+
+        // A shop created from a dataset gets its catalog from it: it is not fetched or built again.
+        if (null !== ($shop['dataset'] ?? null)) {
+            return $this->createForm(ShopSettingsType::class, $defaults, array_merge(['csrf_token_id' => 'opencolibri_sales_kit_shop_project'], $options));
+        }
+
+        if ($isAi) {
+            $defaults['limit'] = 20;
+        }
+
+        return $this->createForm(
+            $isAi ? ShopProjectAiType::class : ShopProjectExistingType::class,
+            $defaults,
+            array_merge(['csrf_token_id' => 'opencolibri_sales_kit_shop_project'], $options),
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array{name: string, description: string, url: string}
+     */
+    private function extractProjectSettings(array $data): array
+    {
+        return [
+            'name' => (string) ($data['name'] ?? ''),
+            'description' => (string) ($data['description'] ?? ''),
+            'url' => (string) ($data['url'] ?? ''),
+        ];
+    }
+
+    /**
+     * @param array{name: string, description: string, url: string} $settings
+     * @param array<string, mixed>                                  $data
+     */
+    private function startProjectImport(string $slug, bool $isAi, array $settings, array $data): Response
+    {
+        $task = $isAi ? 'sylius:import:ai:build' : 'sylius:import:existing:fetch';
+        $payload = [
+            'project' => $slug,
+            'name' => $settings['name'],
+            'description' => $settings['description'],
+            'url' => $settings['url'],
+        ];
+
+        if ($isAi) {
+            $payload['limit'] = (int) ($data['limit'] ?? 20);
+        } elseif ('' === trim($settings['url'])) {
+            throw new \InvalidArgumentException('Site URL is required.');
+        }
+
+        $this->projectConfigStorage->refreshShopImagesFlags($slug);
+        $started = $this->castorApi->start($task, $payload);
+
+        return $this->redirectToRoute('opencolibri_sales_kit_shop_show', [
+            'slug' => $slug,
+            'run' => $started['id'],
+            'task' => $started['task'],
+        ]);
+    }
+
+    /**
+     * The theme picker is hidden when castor-api cannot list the themes.
+     *
+     * @return list<string>|null
+     */
+    private function listThemes(): ?array
+    {
+        try {
+            return $this->castorApi->listThemes();
+        } catch (\RuntimeException) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function findShop(string $slug): array
+    {
+        foreach ($this->castorApi->listShops() as $shop) {
+            if (($shop['slug'] ?? null) === $slug) {
+                return $shop;
+            }
+        }
+
+        throw $this->createNotFoundException();
+    }
+
+    private function uploadedFile(mixed $value): ?UploadedFile
+    {
+        return $value instanceof UploadedFile ? $value : null;
+    }
+
+    private function saveOptionalImages(string $slug, FormInterface $form): void
+    {
+        $files = [
+            'imageLogo' => $this->uploadedFile($form->get('imageLogo')->getData()),
+            'imageHeader' => $this->uploadedFile($form->get('imageHeader')->getData()),
+            'imageInterstice' => $this->uploadedFile($form->get('imageInterstice')->getData()),
+        ];
+
+        if (
+            !$files['imageLogo'] instanceof UploadedFile
+            && !$files['imageHeader'] instanceof UploadedFile
+            && !$files['imageInterstice'] instanceof UploadedFile
+        ) {
+            return;
+        }
+
+        $this->shopImageStorage->save($slug, $files, requireLogo: false);
+    }
+}

@@ -107,12 +107,16 @@ return static function (ContainerConfigurator $container): void {
         'opencolibri_sales_kit.shop.show.content.body.main' => [
             'source' => ['template' => $views . '/shop/show/source.html.twig', 'priority' => 200],
             'actions' => ['template' => $views . '/shop/show/steps.html.twig', 'priority' => 100],
+            'storefront' => ['template' => $views . '/shop/show/storefront.html.twig', 'priority' => 0],
+        ],
+        // The look of the storefront, side by side under the steps.
+        'opencolibri_sales_kit.shop.show.content.body.main.storefront' => [
+            'theme' => ['template' => $views . '/shop/show/theme.html.twig', 'priority' => 200],
+            'header_layout' => ['template' => $views . '/shop/show/header_layout.html.twig', 'priority' => 100],
         ],
         'opencolibri_sales_kit.shop.show.content.body.aside' => [
             'access' => ['template' => $views . '/shop/show/access.html.twig', 'priority' => 400],
             'visibility' => ['template' => $views . '/shop/show/visibility.html.twig', 'priority' => 300],
-            'theme' => ['template' => $views . '/shop/show/theme.html.twig', 'priority' => 200],
-            'header_layout' => ['template' => $views . '/shop/show/header_layout.html.twig', 'priority' => 150],
             'delete' => ['template' => $views . '/shop/show/delete.html.twig', 'priority' => 100],
         ],
 

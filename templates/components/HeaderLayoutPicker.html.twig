@@ -19,6 +19,7 @@
                 {% if applied %}
                     {{ component('sales_kit:message', {message: 'opencolibri_sales_kit.ui.header_layout_applied'|trans({'%theme%': theme}), type: 'success'}) }}
                 {% endif %}
+                {{ component('sales_kit:header_preview', {menu: menu, search: search}) }}
                 <div class="flex flex-col gap-3">
                     <div class="flex flex-col gap-1.5">
                         <twig:shadcn:Label for="header-menu">{{ 'opencolibri_sales_kit.ui.header_menu'|trans }}</twig:shadcn:Label>

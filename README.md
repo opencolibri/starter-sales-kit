@@ -93,7 +93,7 @@ opencolibri_sales_kit:
 |---|---|
 | `opencolibri_sales_kit.shop.index` | `resources` (grid view) |
 | `opencolibri_sales_kit.shop.new` | `form`, `datasets` |
-| `opencolibri_sales_kit.shop.show` | `shop`, `projectForm`, `themes` |
+| `opencolibri_sales_kit.shop.show` | `shop`, `projectForm`, `themes`, `theme_headers` |
 | `opencolibri_sales_kit.dataset.index` | `resources` (grid view) |
 | `opencolibri_sales_kit.dataset.new` | `form`, `source` |
 | `sylius_admin.dashboard.index` | — |

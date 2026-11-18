@@ -122,7 +122,7 @@ final class ShopController extends AbstractController
         return $this->render('@OpenColibriStarterSalesKit/shop/show.html.twig', [
             'shop' => $shop,
             'projectForm' => $projectForm,
-            'themes' => $this->listThemes(),
+            ...$this->themeCatalog(),
         ]);
     }
 
@@ -236,17 +236,19 @@ final class ShopController extends AbstractController
     }
 
     /**
-     * The theme picker is hidden when castor-api cannot list the themes.
+     * The theme picker and the header layout are hidden when castor-api cannot list the themes.
      *
-     * @return list<string>|null
+     * @return array{themes: list<string>|null, theme_headers: array<string, array{menu: string, search: string, menus: list<string>, searches: list<string>}>}
      */
-    private function listThemes(): ?array
+    private function themeCatalog(): array
     {
         try {
-            return $this->castorApi->listThemes();
+            $catalog = $this->castorApi->themeCatalog();
         } catch (\RuntimeException) {
-            return null;
+            return ['themes' => null, 'theme_headers' => []];
         }
+
+        return ['themes' => $catalog['themes'], 'theme_headers' => $catalog['headers']];
     }
 
     /**

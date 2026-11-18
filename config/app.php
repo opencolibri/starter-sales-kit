@@ -112,6 +112,7 @@ return static function (ContainerConfigurator $container): void {
             'access' => ['template' => $views . '/shop/show/access.html.twig', 'priority' => 400],
             'visibility' => ['template' => $views . '/shop/show/visibility.html.twig', 'priority' => 300],
             'theme' => ['template' => $views . '/shop/show/theme.html.twig', 'priority' => 200],
+            'header_layout' => ['template' => $views . '/shop/show/header_layout.html.twig', 'priority' => 150],
             'delete' => ['template' => $views . '/shop/show/delete.html.twig', 'priority' => 100],
         ],
 

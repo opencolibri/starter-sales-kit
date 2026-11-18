@@ -101,6 +101,17 @@ final class CastorApiClient
      */
     public function listThemes(): array
     {
+        return $this->themeCatalog()['themes'];
+    }
+
+    /**
+     * The storefront themes a shop can pick, and the header layout of each installed theme: where it shows the menu
+     * and the search, and the placements it supports. A theme installed before the header layout existed has none.
+     *
+     * @return array{themes: list<string>, headers: array<string, array{menu: string, search: string, menus: list<string>, searches: list<string>}>}
+     */
+    public function themeCatalog(): array
+    {
         $result = $this->run('sales-kit:theme:list');
         $decoded = self::decodeJsonOutput($result);
 
@@ -108,10 +119,31 @@ final class CastorApiClient
             throw new \RuntimeException('castor-api returned an invalid theme list.');
         }
 
-        return array_values(array_filter(
-            \is_array($decoded['themes'] ?? null) ? $decoded['themes'] : [],
-            \is_string(...),
-        ));
+        $headers = [];
+
+        foreach (\is_array($decoded['headers'] ?? null) ? $decoded['headers'] : [] as $theme => $header) {
+            if (\is_string($theme) && \is_array($header) && \is_string($header['menu'] ?? null) && \is_string($header['search'] ?? null)) {
+                $headers[$theme] = [
+                    'menu' => $header['menu'],
+                    'search' => $header['search'],
+                    'menus' => self::strings($header['menus'] ?? null),
+                    'searches' => self::strings($header['searches'] ?? null),
+                ];
+            }
+        }
+
+        return [
+            'themes' => self::strings($decoded['themes'] ?? null),
+            'headers' => $headers,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function strings(mixed $values): array
+    {
+        return array_values(array_filter(\is_array($values) ? $values : [], \is_string(...)));
     }
 
     /**

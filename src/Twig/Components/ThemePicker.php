@@ -8,6 +8,7 @@ use OpenColibri\Starter\SalesKit\Castor\CastorApiClient;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\ComponentToolsTrait;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
@@ -17,7 +18,11 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 #[AsLiveComponent]
 final class ThemePicker
 {
+    use ComponentToolsTrait;
     use DefaultActionTrait;
+
+    /** Emitted with the "theme" once the shop uses it (HeaderLayoutPicker follows it). */
+    public const APPLIED_EVENT = 'salesKit:themeApplied';
 
     #[LiveProp]
     public string $project = '';
@@ -70,5 +75,6 @@ final class ThemePicker
 
         $this->currentTheme = $this->theme;
         $this->applied = true;
+        $this->emit(self::APPLIED_EVENT, ['theme' => $this->theme]);
     }
 }

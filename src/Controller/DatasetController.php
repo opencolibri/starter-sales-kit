@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace OpenColibri\Starter\SalesKit\Controller;
 
 use OpenColibri\Starter\SalesKit\Castor\CastorApiClient;
+use OpenColibri\Starter\SalesKit\Dataset\DatasetCatalogReader;
 use OpenColibri\Starter\SalesKit\Form\DatasetAiType;
 use OpenColibri\Starter\SalesKit\Form\DatasetExistingType;
 use OpenColibri\Starter\SalesKit\Grid\DatasetGrid;
 use OpenColibri\Starter\SalesKit\Import\ShopImageStorage;
+use OpenColibri\Starter\SalesKit\Model\Dataset;
+use OpenColibri\Starter\SalesKit\Repository\DatasetRepository;
+use OpenColibri\Starter\SalesKit\Repository\ShopRepository;
 use Sylius\Component\Grid\Parameters;
 use Sylius\Component\Grid\Provider\GridProviderInterface;
 use Sylius\Component\Grid\View\GridViewFactoryInterface;
@@ -33,6 +37,9 @@ final class DatasetController extends AbstractController
         private readonly string $exportDir,
         private readonly GridProviderInterface $gridProvider,
         private readonly GridViewFactoryInterface $gridViewFactory,
+        private readonly DatasetRepository $datasets,
+        private readonly ShopRepository $shops,
+        private readonly DatasetCatalogReader $catalogReader,
     ) {}
 
     #[Route('/datasets', name: 'opencolibri_sales_kit_dataset_index')]
@@ -88,6 +95,34 @@ final class DatasetController extends AbstractController
             'source' => $source,
             'form' => $form,
         ]);
+    }
+
+    #[Route('/datasets/{slug}', name: 'opencolibri_sales_kit_dataset_show', requirements: ['slug' => '[a-z0-9][a-z0-9_-]*'], methods: ['GET'])]
+    public function show(Request $request, string $slug): Response
+    {
+        $dataset = $this->findDataset($slug);
+        $catalog = $this->catalogReader->read($slug);
+        $collection = $request->query->getString('collection');
+        $collection = null !== $catalog && \in_array($collection, array_column($catalog->collections, 'name'), true) ? $collection : null;
+
+        return $this->render('@OpenColibriStarterSalesKit/dataset/show.html.twig', [
+            'dataset' => $dataset,
+            'catalog' => $catalog,
+            'collection' => $collection,
+            'shops' => $this->shops->withDataset($slug)->orderBy('name')->getResult(),
+        ]);
+    }
+
+    #[Route('/datasets/{slug}/media/{file}', name: 'opencolibri_sales_kit_dataset_media', requirements: ['slug' => '[a-z0-9][a-z0-9_-]*', 'file' => '[A-Za-z0-9][A-Za-z0-9._-]*'], methods: ['GET'])]
+    public function media(string $slug, string $file): BinaryFileResponse
+    {
+        $path = $this->catalogReader->mediaPath($slug, $file) ?? throw $this->createNotFoundException();
+
+        $response = new BinaryFileResponse($path, autoEtag: true, autoLastModified: true);
+        $response->setPrivate();
+        $response->setMaxAge(3600);
+
+        return $response;
     }
 
     #[Route('/datasets/{slug}/download', name: 'opencolibri_sales_kit_dataset_download', methods: ['GET'])]
@@ -162,6 +197,17 @@ final class DatasetController extends AbstractController
         }
 
         return $this->redirectToRoute('opencolibri_sales_kit_dataset_index');
+    }
+
+    private function findDataset(string $slug): Dataset
+    {
+        foreach ($this->datasets->findAll() as $dataset) {
+            if ($dataset->slug === $slug) {
+                return $dataset;
+            }
+        }
+
+        throw $this->createNotFoundException(\sprintf('Unknown dataset "%s".', $slug));
     }
 
     private function assertSlug(string $slug): void

@@ -47,6 +47,10 @@ final class OpenColibriStarterSalesKitBundle extends AbstractBundle
                     ->defaultValue('%env(IMPORT_EXPORT_DIR)%')
                     ->info('Where castor-api writes the dataset zips.')
                 ->end()
+                ->scalarNode('import_datasets_dir')
+                    ->defaultValue('%env(default::IMPORT_DATASETS_DIR)%')
+                    ->info('The .castor/import/datasets directory of the stack (read only): the catalog of the datasets built here. Empty: their page only shows their figures.')
+                ->end()
             ->end()
         ;
     }
@@ -74,7 +78,7 @@ final class OpenColibriStarterSalesKitBundle extends AbstractBundle
     }
 
     /**
-     * @param array{castor_api: array{url: string, token: string}, shop_root_domain: string, import_var_dir: string, import_export_dir: string} $config
+     * @param array{castor_api: array{url: string, token: string}, shop_root_domain: string, import_var_dir: string, import_export_dir: string, import_datasets_dir: string|null} $config
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
@@ -84,6 +88,7 @@ final class OpenColibriStarterSalesKitBundle extends AbstractBundle
             ->set('opencolibri_sales_kit.shop_root_domain', $config['shop_root_domain'])
             ->set('opencolibri_sales_kit.import_var_dir', $config['import_var_dir'])
             ->set('opencolibri_sales_kit.import_export_dir', $config['import_export_dir'])
+            ->set('opencolibri_sales_kit.import_datasets_dir', $config['import_datasets_dir'])
         ;
 
         $container->import('../config/services.php');

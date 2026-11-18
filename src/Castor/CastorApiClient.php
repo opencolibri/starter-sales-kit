@@ -12,7 +12,8 @@ final class CastorApiClient
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly string $baseUrl,
-        private readonly string $token,
+        /** Null or empty: castor-api runs without authentication (%env(default::CASTOR_API_TOKEN)%). */
+        private readonly ?string $token,
     ) {}
 
     /**
@@ -184,7 +185,7 @@ final class CastorApiClient
             ],
         ];
 
-        if ('' !== $this->token) {
+        if (null !== $this->token && '' !== $this->token) {
             $options['headers']['Authorization'] = 'Bearer ' . $this->token;
         }
 

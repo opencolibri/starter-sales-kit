@@ -9,7 +9,7 @@
         {% endif %}
     </span>
     <div class="min-w-0">
-        <div class="font-medium">{{ data.name }}</div>
+        <a href="{{ path('opencolibri_sales_kit_dataset_show', {slug: data.slug}) }}" class="font-medium hover:underline">{{ data.name }}</a>
         <div class="text-xs text-muted-foreground"><span class="font-mono">{{ data.slug }}</span>{% if data.theme %} · {{ 'opencolibri_sales_kit.ui.theme'|trans|lower }} {{ data.theme }}{% endif %}</div>
         {% if data.description %}
             <div class="mt-1 line-clamp-2 max-w-xl text-xs text-muted-foreground">{{ data.description }}</div>

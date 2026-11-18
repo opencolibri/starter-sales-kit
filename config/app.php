@@ -139,6 +139,21 @@ return static function (ContainerConfigurator $container): void {
             ],
         ],
 
+        'opencolibri_sales_kit.dataset.show.content.header.title_block' => [
+            'actions' => ['template' => $views . '/dataset/show/actions.html.twig'],
+        ],
+        'opencolibri_sales_kit.dataset.show.content.body' => [
+            'stats' => ['template' => $views . '/dataset/show/stats.html.twig', 'priority' => 300],
+            'columns' => ['template' => $views . '/shop/show/columns.html.twig', 'priority' => 200],
+        ],
+        'opencolibri_sales_kit.dataset.show.content.body.main' => [
+            'catalog' => ['template' => $views . '/dataset/show/catalog.html.twig', 'priority' => 100],
+        ],
+        'opencolibri_sales_kit.dataset.show.content.body.aside' => [
+            'about' => ['template' => $views . '/dataset/show/about.html.twig', 'priority' => 200],
+            'shops' => ['template' => $views . '/dataset/show/shops.html.twig', 'priority' => 100],
+        ],
+
         'opencolibri_sales_kit.dataset.new.content.body' => [
             'form' => ['template' => $views . '/dataset/new/form.html.twig'],
         ],

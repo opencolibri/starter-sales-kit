@@ -1,5 +1,8 @@
 {% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
 <div class="flex justify-end gap-1.5">
+    <a class="{{ button_class('outline', 'sm') }}" href="{{ path('opencolibri_sales_kit_dataset_show', {slug: data.slug}) }}">
+        {{ ux_icon('lucide:eye', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ 'opencolibri_sales_kit.ui.view'|trans }}
+    </a>
     <a class="{{ button_class('default', 'sm') }}" href="{{ path('opencolibri_sales_kit_shop_new', {dataset: data.slug}) }}">
         {{ ux_icon('lucide:plus', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ 'opencolibri_sales_kit.ui.create_a_shop'|trans }}
     </a>

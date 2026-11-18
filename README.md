@@ -71,6 +71,7 @@ opencolibri_sales_kit:
     shop_root_domain: '%env(SHOP_ROOT_DOMAIN)%'      # shops on {slug}.<domain>
     import_var_dir: '%env(IMPORT_VAR_DIR)%'          # .castor/import/var shared with castor-api
     import_export_dir: '%env(IMPORT_EXPORT_DIR)%'    # dataset zips
+    import_datasets_dir: '%env(default::IMPORT_DATASETS_DIR)%'  # .castor/import/datasets, read only: catalog of the datasets built here
 ```
 
 ## Customizing an instance
@@ -95,6 +96,7 @@ opencolibri_sales_kit:
 | `opencolibri_sales_kit.shop.new` | `form`, `datasets` |
 | `opencolibri_sales_kit.shop.show` | `shop`, `projectForm`, `themes`, `theme_headers` |
 | `opencolibri_sales_kit.dataset.index` | `resources` (grid view) |
+| `opencolibri_sales_kit.dataset.show` | `dataset`, `catalog` (null when its files are not readable), `collection`, `shops` |
 | `opencolibri_sales_kit.dataset.new` | `form`, `source` |
 | `sylius_admin.dashboard.index` | — |
 

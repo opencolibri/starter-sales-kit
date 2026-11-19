@@ -59,6 +59,8 @@ final class OpenColibriStarterSalesKitBundle extends AbstractBundle
     {
         // <twig:SalesKit:RunMonitor />, component('SalesKit:ShopActions')...
         $builder->prependExtensionConfig('twig_component', [
+            // Required by TwigComponent, set by its Flex recipe: the instance may set its own.
+            'anonymous_template_directory' => 'components/',
             'defaults' => [
                 'OpenColibri\\Starter\\SalesKit\\Twig\\Components\\' => [
                     'template_directory' => '@OpenColibriStarterSalesKit/components/',

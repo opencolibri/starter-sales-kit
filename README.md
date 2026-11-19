@@ -100,6 +100,18 @@ opencolibri_sales_kit:
 | `opencolibri_sales_kit.dataset.new` | `form`, `source` |
 | `sylius_admin.dashboard.index` | — |
 
+## Tests
+
+```bash
+vendor/bin/phpunit --testsuite sales-kit    # from the monorepo root
+```
+
+`tests/Application/Kernel.php` is a sales kit instance with an `admin` user, where castor-api is replaced by
+`tests/Support/FakeCastorApi.php`: the list tasks answer the JSON of `tests/Fixtures/castor-api/`, every call is
+recorded, and `fail()` / `conflict()` make a task fail or hold its lock. No sales kit stack is needed. The tests cover
+the in-memory repositories, the dataset catalogs, the castor-api client, the pages (`WebTestCase`) and the Live and
+Twig components (`InteractsWithLiveComponents`, `InteractsWithTwigComponents`).
+
 ## Notes from the PoC
 
 - Inside a `<twig:…>` component, `this` is that component and macros imported by the template are not visible: read
@@ -108,5 +120,5 @@ opencolibri_sales_kit:
 - Never `{% set icon = ux_icon(...) %}` then `{{ icon }}`: `ux_icon()` returns a plain string and is only marked safe where
   it is printed, so the variable is escaped. Print it directly, or capture it with `{% set icon %}…{% endset %}`
   (a `Markup`, safe everywhere, including inside the blocks of another component).
-- Not done yet: the castor-side tasks (`castor/*.php` of the sales kit repo) still live in the instance repo, no tests,
-  English only.
+- Not done yet: the castor-side tasks (`castor/*.php` of the sales kit repo) still live in the instance repo, English
+  only.

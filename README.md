@@ -10,7 +10,7 @@ instance from it: users, branding, colors, domains and extra pages stay in the i
 Developed in the [colibri-starter](https://github.com/opencolibri/colibri-starter) monorepo (`src/SalesKit`), split
 into the read-only [opencolibri/starter-sales-kit](https://github.com/opencolibri/starter-sales-kit) repository. Unlike
 the other packages, it is not a Castor plugin but a Symfony bundle. See the
-[sales kit page of the documentation](https://starter.opencolibri.org/docs/import/sales-kit/) for an overview.
+[sales kit section of the documentation](https://starter.opencolibri.org/docs/sales-kit/) for an overview.
 
 ## How it works
 

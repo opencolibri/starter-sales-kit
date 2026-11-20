@@ -1,8 +1,0 @@
-/*
- * Tailwind sources of the sales kit templates. Import it in the admin.css of the instance, after the theme:
- *
- *     @import "tailwindcss";
- *     @import "../../vendor/sylius/shadcn-admin-ui/assets/styles/theme.css";
- *     @import "../../vendor/opencolibri/starter-sales-kit/assets/styles/sales-kit.css";
- */
-@source "../../templates";

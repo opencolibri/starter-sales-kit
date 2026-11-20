@@ -1,0 +1,3 @@
+parameters:
+    # Per channel shop images (logo, header, interstice), overridden by ../import/shop_images.php.
+    app.shop_images_by_channel: []

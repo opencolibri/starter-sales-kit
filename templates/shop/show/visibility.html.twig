@@ -1,5 +1,0 @@
-{% set shop = hookable_metadata.context.shop %}
-
-{% if shop.canBePrivate|default(false) %}
-    {{ component('SalesKit:ShopVisibility', {project: shop.slug, private: shop.private|default(false)}) }}
-{% endif %}

@@ -1,0 +1,8 @@
+# The interstice image a shop of the sales kit can upload. The hero and the logo are shared slots owned by
+# opencolibri/starter-core: the sales kit only feeds them, see src/Import/Storefront/.
+sylius_twig_hooks:
+    hooks:
+        'sylius_shop.homepage.index':
+            import_interstice:
+                template: 'shop/homepage/interstice.html.twig'
+                priority: 50

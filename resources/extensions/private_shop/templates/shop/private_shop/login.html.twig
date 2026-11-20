@@ -1,0 +1,34 @@
+{# Login page of a private demo shop (see App\EventListener\ImportPrivateShopLoginListener). #}
+{% extends '@SyliusShop/shared/layout/base.html.twig' %}
+
+{% form_theme form '@SyliusShop/form/theme.html.twig' %}
+
+{% block title %}{{ 'sylius.ui.customer_login'|trans }} | {{ parent() }}{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+    {% set logo = shop_image('imageLogo') %}
+    <main class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
+        <div class="w-100" style="max-width: 26rem;">
+            <div class="text-center mb-4">
+                {% if logo %}
+                    <img src="{{ logo }}" alt="{{ sylius.channel.name }}" class="img-fluid mb-4" style="max-height: 4rem;">
+                {% endif %}
+                <h1 class="h3 mb-2">{{ sylius.channel.name }}</h1>
+                <p class="text-body-secondary mb-0">{{ 'notice'|trans({}, 'import_private_shop') }}</p>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    {# As @SyliusShop/account/login/content/login_container/form.html.twig, which needs its hook context. #}
+                    {{ form_start(form, {'action': path('sylius_shop_login_check'), 'attr': {'novalidate': 'novalidate'}}) }}
+                        {% hook 'sylius_shop.account.login.content.login_container.form' with { form, last_error } %}
+                        {% include '@SyliusShop/account/login/content/login_container/form/csrf_token.html.twig' %}
+                    {{ form_end(form, {'render_rest': false}) }}
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block footer %}{% endblock %}

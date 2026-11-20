@@ -1,5 +1,0 @@
-{% set shop = hookable_metadata.context.shop %}
-
-{% if hookable_metadata.context.themes|default(null) %}
-    {{ component('SalesKit:HeaderLayoutPicker', {headers: hookable_metadata.context.theme_headers, theme: shop.theme|default('default')}) }}
-{% endif %}

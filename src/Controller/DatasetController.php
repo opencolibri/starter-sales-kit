@@ -71,7 +71,7 @@ final class DatasetController extends AbstractController
             $data = $form->getData();
 
             try {
-                $started = $this->castorApi->start('sylius:import:dataset:build', [
+                $started = $this->castorApi->start('sylius:dataset:build', [
                     'source' => $source,
                     'dataset' => $this->shopImageStorage->slugFromName((string) ($data['name'] ?? '')),
                     'name' => (string) ($data['name'] ?? ''),
@@ -131,7 +131,7 @@ final class DatasetController extends AbstractController
         $this->assertSlug($slug);
 
         try {
-            $this->castorApi->run('sylius:import:dataset:export', ['dataset' => $slug]);
+            $this->castorApi->run('sylius:dataset:export', ['dataset' => $slug]);
         } catch (\RuntimeException $exception) {
             $this->addFlash('error', $exception->getMessage());
 
@@ -164,7 +164,7 @@ final class DatasetController extends AbstractController
         }
 
         try {
-            $started = $this->castorApi->start('sylius:import:dataset:images', ['dataset' => $slug]);
+            $started = $this->castorApi->start('sylius:dataset:images', ['dataset' => $slug]);
         } catch (\RuntimeException $exception) {
             $this->addFlash('error', $exception->getMessage());
 
@@ -190,7 +190,7 @@ final class DatasetController extends AbstractController
         }
 
         try {
-            $this->castorApi->run('sylius:import:dataset:delete', ['dataset' => $slug]);
+            $this->castorApi->run('sylius:dataset:delete', ['dataset' => $slug]);
             $this->addFlash('success', \sprintf('Dataset "%s" deleted. The shops created from it are kept.', $slug));
         } catch (\RuntimeException $exception) {
             $this->addFlash('error', $exception->getMessage());

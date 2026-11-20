@@ -30,6 +30,6 @@ final class DeleteShop
     #[LiveAction]
     public function delete(): void
     {
-        $this->startRun('sylius:import:delete', ['project' => $this->slug]);
+        $this->startRun('sylius:shop:delete', ['shop' => $this->slug]);
     }
 }

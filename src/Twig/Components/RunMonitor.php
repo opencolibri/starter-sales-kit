@@ -97,7 +97,7 @@ final class RunMonitor extends AbstractController
 
         $this->following = false;
 
-        if ('sylius:import:delete' === $this->task && 'completed' === $this->getStatus()) {
+        if ('sylius:shop:delete' === $this->task && 'completed' === $this->getStatus()) {
             $this->addFlash('success', 'Shop deleted.');
 
             return $this->redirectToRoute('opencolibri_sales_kit_shop_index');

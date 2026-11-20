@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OpenColibri\Starter\SalesKit\Model;
 
 /**
- * A catalog shops are created from, as listed by castor-api ("sylius:import:dataset:list"): one row of the dataset grid.
+ * A catalog shops are created from, as listed by castor-api ("sylius:dataset:list"): one row of the dataset grid.
  */
 final readonly class Dataset
 {

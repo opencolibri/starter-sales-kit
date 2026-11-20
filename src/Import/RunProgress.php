@@ -28,8 +28,8 @@ final class RunProgress
     public static function key(string $task, array $payload): ?string
     {
         [$prefix, $field] = match (true) {
-            str_starts_with($task, 'sylius:import:dataset:') => ['dataset-', 'dataset'],
-            'sylius:import:fixtures:generate' === $task => ['shop-', 'project'],
+            str_starts_with($task, 'sylius:dataset:') => ['dataset-', 'dataset'],
+            'sylius:shop:generate' === $task => ['shop-', 'shop'],
             default => [null, null],
         };
 

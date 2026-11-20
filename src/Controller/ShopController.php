@@ -6,8 +6,6 @@ namespace OpenColibri\Starter\SalesKit\Controller;
 
 use OpenColibri\Starter\SalesKit\Castor\CastorApiClient;
 use OpenColibri\Starter\SalesKit\Form\ShopCreateType;
-use OpenColibri\Starter\SalesKit\Form\ShopProjectAiType;
-use OpenColibri\Starter\SalesKit\Form\ShopProjectExistingType;
 use OpenColibri\Starter\SalesKit\Form\ShopSettingsType;
 use OpenColibri\Starter\SalesKit\Grid\ShopGrid;
 use OpenColibri\Starter\SalesKit\Import\ProjectConfigStorage;
@@ -17,7 +15,6 @@ use Sylius\Component\Grid\Provider\GridProviderInterface;
 use Sylius\Component\Grid\View\GridViewFactoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\SubmitButton;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -83,9 +80,9 @@ final class ShopController extends AbstractController
 
             try {
                 $slug = $this->shopImageStorage->slugFromName($data['name']);
-                $this->castorApi->run('sylius:import:shop:create', [
+                $this->castorApi->run('sylius:shop:create', [
                     'dataset' => $data['dataset'],
-                    'project' => $slug,
+                    'shop' => $slug,
                     'name' => $data['name'],
                     'description' => (string) $data['description'],
                 ]);
@@ -112,9 +109,8 @@ final class ShopController extends AbstractController
     public function show(string $slug): Response
     {
         $shop = $this->findShop($slug);
-        $isAi = 'ai' === (string) ($shop['mode'] ?? 'existing');
 
-        $projectForm = $this->createProjectForm($shop, $slug, $isAi, [
+        $projectForm = $this->createProjectForm($shop, $slug, [
             'action' => $this->generateUrl('opencolibri_sales_kit_shop_project', ['slug' => $slug]),
             'method' => 'POST',
         ]);
@@ -130,9 +126,8 @@ final class ShopController extends AbstractController
     public function project(Request $request, string $slug): Response
     {
         $shop = $this->findShop($slug);
-        $isAi = 'ai' === (string) ($shop['mode'] ?? 'existing');
 
-        $form = $this->createProjectForm($shop, $slug, $isAi);
+        $form = $this->createProjectForm($shop, $slug);
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
@@ -146,15 +141,8 @@ final class ShopController extends AbstractController
 
         try {
             $this->saveOptionalImages($slug, $form);
-            $settings = $this->extractProjectSettings($data);
-
-            $refetchButton = $form->has('refetch') ? $form->get('refetch') : null;
-            if ($refetchButton instanceof SubmitButton && $refetchButton->isClicked()) {
-                return $this->startProjectImport($slug, $isAi, $settings, $data);
-            }
-
-            // The settings of a shop created from a dataset have no URL: keep the dataset one.
-            $this->projectConfigStorage->updateSettings($slug, $form->has('url') ? $settings : array_diff_key($settings, ['url' => true]));
+            // A shop gets its catalog and URL from its dataset: only its name and description change.
+            $this->projectConfigStorage->updateSettings($slug, array_diff_key($this->extractProjectSettings($data), ['url' => true]));
             $this->addFlash('success', 'Shop settings updated.');
         } catch (\InvalidArgumentException|\RuntimeException $exception) {
             $this->addFlash('error', $exception->getMessage());
@@ -164,31 +152,17 @@ final class ShopController extends AbstractController
     }
 
     /**
+     * A shop gets its catalog from its dataset: to change it, build the dataset again and create a shop from it.
+     *
      * @param array<string, mixed> $shop
      * @param array<string, mixed> $options
      */
-    private function createProjectForm(array $shop, string $slug, bool $isAi, array $options = []): FormInterface
+    private function createProjectForm(array $shop, string $slug, array $options = []): FormInterface
     {
-        $defaults = [
+        return $this->createForm(ShopSettingsType::class, [
             'name' => (string) ($shop['name'] ?? $slug),
-            'url' => (string) ($shop['url'] ?? ''),
             'description' => (string) ($shop['description'] ?? ''),
-        ];
-
-        // A shop created from a dataset gets its catalog from it: it is not fetched or built again.
-        if (null !== ($shop['dataset'] ?? null)) {
-            return $this->createForm(ShopSettingsType::class, $defaults, array_merge(['csrf_token_id' => 'opencolibri_sales_kit_shop_project'], $options));
-        }
-
-        if ($isAi) {
-            $defaults['limit'] = 20;
-        }
-
-        return $this->createForm(
-            $isAi ? ShopProjectAiType::class : ShopProjectExistingType::class,
-            $defaults,
-            array_merge(['csrf_token_id' => 'opencolibri_sales_kit_shop_project'], $options),
-        );
+        ], array_merge(['csrf_token_id' => 'opencolibri_sales_kit_shop_project'], $options));
     }
 
     /**
@@ -203,36 +177,6 @@ final class ShopController extends AbstractController
             'description' => (string) ($data['description'] ?? ''),
             'url' => (string) ($data['url'] ?? ''),
         ];
-    }
-
-    /**
-     * @param array{name: string, description: string, url: string} $settings
-     * @param array<string, mixed>                                  $data
-     */
-    private function startProjectImport(string $slug, bool $isAi, array $settings, array $data): Response
-    {
-        $task = $isAi ? 'sylius:import:ai:build' : 'sylius:import:existing:fetch';
-        $payload = [
-            'project' => $slug,
-            'name' => $settings['name'],
-            'description' => $settings['description'],
-            'url' => $settings['url'],
-        ];
-
-        if ($isAi) {
-            $payload['limit'] = (int) ($data['limit'] ?? 20);
-        } elseif ('' === trim($settings['url'])) {
-            throw new \InvalidArgumentException('Site URL is required.');
-        }
-
-        $this->projectConfigStorage->refreshShopImagesFlags($slug);
-        $started = $this->castorApi->start($task, $payload);
-
-        return $this->redirectToRoute('opencolibri_sales_kit_shop_show', [
-            'slug' => $slug,
-            'run' => $started['id'],
-            'task' => $started['task'],
-        ]);
     }
 
     /**

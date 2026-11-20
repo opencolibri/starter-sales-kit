@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OpenColibri\Starter\SalesKit\Model;
 
 /**
- * A demo shop, as listed by castor-api ("sylius:import:list"): one row of the shop grid.
+ * A demo shop, as listed by castor-api ("sylius:shop:list"): one row of the shop grid.
  */
 final readonly class Shop
 {

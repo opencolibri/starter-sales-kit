@@ -59,8 +59,7 @@ final class ShopActions
         }
 
         $payload = [
-            'mode' => $this->mode,
-            'project' => $this->slug,
+            'shop' => $this->slug,
             'subdomain' => $this->slug,
         ];
 
@@ -74,7 +73,7 @@ final class ShopActions
             $payload['limit'] = $this->limit;
         }
 
-        $this->startRun('sylius:import:fixtures:generate', $payload);
+        $this->startRun('sylius:shop:generate', $payload);
     }
 
     #[LiveAction]
@@ -86,7 +85,7 @@ final class ShopActions
             return;
         }
 
-        $this->startRun('sylius:import:fixtures:load', ['project' => $this->slug]);
+        $this->startRun('sylius:shop:load', ['shop' => $this->slug]);
     }
 
     public function isAi(): bool

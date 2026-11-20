@@ -24,7 +24,7 @@ final class ShopRepositoryTest extends TestCase
         static::assertSame(['cellar', 'atelier'], self::slugs($this->shops->findAll()));
         $this->shops->withSearch('cel')->getResult();
 
-        static::assertCount(1, FakeCastorApi::calls('sylius:import:list'));
+        static::assertCount(1, FakeCastorApi::calls('sylius:shop:list'));
     }
 
     public function testItFiltersWithoutChangingTheRepository(): void
@@ -64,7 +64,7 @@ final class ShopRepositoryTest extends TestCase
         $this->shops->reset();
         $this->shops->findAll();
 
-        static::assertCount(2, FakeCastorApi::calls('sylius:import:list'));
+        static::assertCount(2, FakeCastorApi::calls('sylius:shop:list'));
     }
 
     /**

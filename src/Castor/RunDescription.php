@@ -10,13 +10,11 @@ namespace OpenColibri\Starter\SalesKit\Castor;
 final class RunDescription
 {
     private const TASK_LABELS = [
-        'sylius:import:existing:fetch' => 'Fetch site',
-        'sylius:import:ai:build' => 'Build AI catalog',
-        'sylius:import:fixtures:generate' => 'Generate fixtures',
-        'sylius:import:fixtures:load' => 'Load into Sylius',
-        'sylius:import:delete' => 'Delete shop',
-        'sylius:import:dataset:build' => 'Build dataset',
-        'sylius:import:dataset:images' => 'Store dataset images',
+        'sylius:shop:generate' => 'Generate fixtures',
+        'sylius:shop:load' => 'Load into Sylius',
+        'sylius:shop:delete' => 'Delete shop',
+        'sylius:dataset:build' => 'Build dataset',
+        'sylius:dataset:images' => 'Store dataset images',
     ];
 
     public static function label(string $task): string
@@ -31,7 +29,7 @@ final class RunDescription
      */
     public static function subject(array $payload): string
     {
-        foreach (['project', 'theme', 'dataset', 'name'] as $key) {
+        foreach (['shop', 'theme', 'dataset', 'name'] as $key) {
             if (\is_scalar($payload[$key] ?? null) && '' !== trim((string) $payload[$key])) {
                 return trim((string) $payload[$key]);
             }

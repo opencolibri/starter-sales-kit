@@ -21,13 +21,13 @@ final class CastorApiClientTest extends TestCase
 
     public function testItRunsATaskWithItsPayloadAndToken(): void
     {
-        FakeCastorApi::client()->run('sales-kit:shop:theme', ['project' => 'cellar', 'theme' => 'drive']);
+        FakeCastorApi::client()->run('sylius:shop:theme', ['shop' => 'cellar', 'theme' => 'drive']);
 
         static::assertSame([[
             'method' => 'POST',
-            'task' => 'sales-kit:shop:theme',
+            'task' => 'sylius:shop:theme',
             'action' => 'run',
-            'payload' => ['project' => 'cellar', 'theme' => 'drive'],
+            'payload' => ['shop' => 'cellar', 'theme' => 'drive'],
             'token' => 'secret-token',
         ]], FakeCastorApi::calls());
     }
@@ -52,21 +52,21 @@ final class CastorApiClientTest extends TestCase
 
     public function testItStartsARun(): void
     {
-        static::assertSame(['id' => 'run-1', 'task' => 'sylius:import:fixtures:load', 'status' => 'pending'], FakeCastorApi::client()->start('sylius:import:fixtures:load', ['project' => 'cellar']));
+        static::assertSame(['id' => 'run-1', 'task' => 'sylius:shop:load', 'status' => 'pending'], FakeCastorApi::client()->start('sylius:shop:load', ['shop' => 'cellar']));
     }
 
     public function testItReportsTheRunThatHoldsTheLock(): void
     {
         $client = new CastorApiClient(new MockHttpClient(new MockResponse(json_encode([
             'error' => 'A task is running.',
-            'conflict' => ['task' => 'sylius:import:fixtures:load', 'payload' => ['project' => 'cellar']],
+            'conflict' => ['task' => 'sylius:shop:load', 'payload' => ['shop' => 'cellar']],
         ], \JSON_THROW_ON_ERROR), ['http_code' => 409])), 'http://castor-api.test', null);
 
         try {
-            $client->start('sylius:import:delete', ['project' => 'cellar']);
+            $client->start('sylius:shop:delete', ['shop' => 'cellar']);
             static::fail('No conflict reported.');
         } catch (RunConflictException $exception) {
-            static::assertSame('sylius:import:fixtures:load', $exception->conflict['task']);
+            static::assertSame('sylius:shop:load', $exception->conflict['task']);
         }
     }
 
@@ -82,7 +82,7 @@ final class CastorApiClientTest extends TestCase
 
     public function testItReadsTheJsonAfterTheNoticesOfCastor(): void
     {
-        FakeCastorApi::output('sylius:import:dataset:list', "A new Castor version is available.\n[{\"slug\": \"cellar\"}]");
+        FakeCastorApi::output('sylius:dataset:list', "A new Castor version is available.\n[{\"slug\": \"cellar\"}]");
 
         static::assertSame([['slug' => 'cellar']], FakeCastorApi::client()->listDatasets());
     }

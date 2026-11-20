@@ -78,7 +78,7 @@ final class CastorApiClient
      */
     public function listShops(): array
     {
-        $result = $this->run('sylius:import:list');
+        $result = $this->run('sylius:shop:list');
         $decoded = self::decodeJsonOutput($result);
 
         return \is_array($decoded) ? array_values($decoded) : [];
@@ -89,7 +89,7 @@ final class CastorApiClient
      */
     public function listDatasets(): array
     {
-        $result = $this->run('sylius:import:dataset:list');
+        $result = $this->run('sylius:dataset:list');
         $decoded = self::decodeJsonOutput($result);
 
         return \is_array($decoded) ? array_values(array_filter($decoded, \is_array(...))) : [];

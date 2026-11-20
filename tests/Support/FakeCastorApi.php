@@ -19,8 +19,8 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 final class FakeCastorApi
 {
     private const OUTPUTS = [
-        'sylius:import:list' => 'shops.json',
-        'sylius:import:dataset:list' => 'datasets.json',
+        'sylius:shop:list' => 'shops.json',
+        'sylius:dataset:list' => 'datasets.json',
         'sales-kit:theme:list' => 'themes.json',
     ];
 

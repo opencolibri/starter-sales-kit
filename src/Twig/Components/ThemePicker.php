@@ -66,7 +66,7 @@ final class ThemePicker
         }
 
         try {
-            $this->castorApi->run('sales-kit:shop:theme', ['project' => $this->project, 'theme' => $this->theme]);
+            $this->castorApi->run('sylius:shop:theme', ['shop' => $this->project, 'theme' => $this->theme]);
         } catch (\RuntimeException $exception) {
             $this->error = $exception->getMessage();
 

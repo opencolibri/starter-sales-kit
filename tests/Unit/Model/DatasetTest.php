@@ -34,10 +34,10 @@ final class DatasetTest extends TestCase
 
     public function testItDescribesARun(): void
     {
-        static::assertSame('Load into Sylius', RunDescription::label('sylius:import:fixtures:load'));
+        static::assertSame('Load into Sylius', RunDescription::label('sylius:shop:load'));
         static::assertSame('custom:task', RunDescription::label('custom:task'));
-        static::assertSame('cellar', RunDescription::subject(['project' => ' cellar ', 'theme' => 'drive']));
-        static::assertSame('drive', RunDescription::subject(['project' => '', 'theme' => 'drive']));
+        static::assertSame('cellar', RunDescription::subject(['shop' => ' cellar ', 'theme' => 'drive']));
+        static::assertSame('drive', RunDescription::subject(['shop' => '', 'theme' => 'drive']));
         static::assertSame('', RunDescription::subject([]));
     }
 }

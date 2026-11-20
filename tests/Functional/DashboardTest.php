@@ -40,7 +40,7 @@ final class DashboardTest extends WebTestCase
 
     public function testItStillRendersWhenCastorApiFails(): void
     {
-        FakeCastorApi::fail('sylius:import:list', 'castor-api is down.');
+        FakeCastorApi::fail('sylius:shop:list', 'castor-api is down.');
 
         static::createAdminClient()->request('GET', '/');
 

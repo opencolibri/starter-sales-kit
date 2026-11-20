@@ -48,7 +48,7 @@ final class ShopVisibility
     private function apply(bool $private): void
     {
         try {
-            $this->castorApi->run('sales-kit:shop:visibility', ['project' => $this->project, 'visibility' => $private ? 'private' : 'public']);
+            $this->castorApi->run('sylius:shop:visibility', ['shop' => $this->project, 'visibility' => $private ? 'private' : 'public']);
         } catch (\RuntimeException $exception) {
             $this->error = $exception->getMessage();
 

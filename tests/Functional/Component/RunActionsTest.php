@@ -14,8 +14,8 @@ final class RunActionsTest extends ComponentTestCase
         $component = $this->createAdminLiveComponent('SalesKit:ShopActions', ['shop' => ['slug' => 'cellar', 'mode' => 'ai', 'hasProducts' => true, 'hasFixtures' => true]])
             ->call('load');
 
-        static::assertSame([['project' => 'cellar']], array_column(FakeCastorApi::calls('sylius:import:fixtures:load'), 'payload'));
-        $this->assertComponentEmitEvent($component, RunMonitor::STARTED_EVENT)->withData(['runId' => 'run-1', 'task' => 'sylius:import:fixtures:load']);
+        static::assertSame([['shop' => 'cellar']], array_column(FakeCastorApi::calls('sylius:shop:load'), 'payload'));
+        $this->assertComponentEmitEvent($component, RunMonitor::STARTED_EVENT)->withData(['runId' => 'run-1', 'task' => 'sylius:shop:load']);
     }
 
     public function testItGeneratesTheFixturesOfAnExistingSiteWithItsLimit(): void
@@ -24,7 +24,7 @@ final class RunActionsTest extends ComponentTestCase
             ->set('limit', 30)
             ->call('generate');
 
-        static::assertSame([['mode' => 'existing', 'project' => 'atelier', 'subdomain' => 'atelier', 'limit' => 30]], array_column(FakeCastorApi::calls('sylius:import:fixtures:generate'), 'payload'));
+        static::assertSame([['shop' => 'atelier', 'subdomain' => 'atelier', 'limit' => 30]], array_column(FakeCastorApi::calls('sylius:shop:generate'), 'payload'));
     }
 
     public function testItChecksTheShopBeforeStartingARun(): void
@@ -38,7 +38,7 @@ final class RunActionsTest extends ComponentTestCase
 
     public function testItNamesTheRunThatHoldsTheLock(): void
     {
-        FakeCastorApi::conflict('sylius:import:delete', 'sylius:import:fixtures:load', ['project' => 'cellar']);
+        FakeCastorApi::conflict('sylius:shop:delete', 'sylius:shop:load', ['shop' => 'cellar']);
 
         $component = $this->createAdminLiveComponent('SalesKit:DeleteShop', ['slug' => 'cellar'])->call('delete');
 
@@ -50,7 +50,7 @@ final class RunActionsTest extends ComponentTestCase
     {
         $component = $this->createAdminLiveComponent('SalesKit:ShopVisibility', ['project' => 'cellar', 'private' => false])->call('makePrivate');
 
-        static::assertSame([['project' => 'cellar', 'visibility' => 'private']], array_column(FakeCastorApi::calls('sales-kit:shop:visibility'), 'payload'));
+        static::assertSame([['shop' => 'cellar', 'visibility' => 'private']], array_column(FakeCastorApi::calls('sylius:shop:visibility'), 'payload'));
         static::assertTrue($component->component()->private);
     }
 }

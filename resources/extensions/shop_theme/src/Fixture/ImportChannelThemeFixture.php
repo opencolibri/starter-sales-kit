@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * Sets the storefront theme of an imported shop channel (a theme of opencolibri/starter-themes installed with the
  * theme-bundle target, null for the Sylius look). Loaded after the channel fixture, which recreates the channel.
  *
- * Copied into the app by the shop_theme import extension (OpenColibri\Starter\Import\Extension\ShopThemeExtension).
+ * Copied into the app by the shop_theme fixtures extension (OpenColibri\Starter\SalesKit\Extension\ShopThemeExtension).
  */
 final class ImportChannelThemeFixture extends AbstractFixture
 {

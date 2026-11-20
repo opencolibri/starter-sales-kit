@@ -27,9 +27,9 @@ sales kit admin (this bundle) ──HTTP──▶ castor-api ──▶ Castor ta
 
 | What | Used for |
 |---|---|
-| The `sylius:import:*` tasks of `opencolibri/starter-import` | shops, datasets, fixtures (list, create, generate, load, delete, export) |
-| The import extensions of `opencolibri/starter-import`, registered in its `castor.php`: `ShopThemeExtension`, `PrivateShopExtension`, `ChannelAdminExtension` | theme, visibility and admin of each shop |
-| `sales-kit:theme:list` (JSON: `themes`, and the `headers` of `HeaderLayout::all()`), `sales-kit:theme:header`, `sylius:shop:theme`, `sylius:shop:visibility` | thin `#[AsApi]` tasks over `ThemeBundle::pickable()`, `sylius:theme:header`, `ShopThemeExtension::set()` and `PrivateShopExtension::set()` |
+| The `sylius:shop:*` tasks of `opencolibri/starter-sales-kit-castor` | shops (list, create, generate, load, delete, theme, visibility), with a theme, a private storefront and an admin each |
+| The `sylius:dataset:*` tasks of `opencolibri/starter-fixtures` and `opencolibri/starter-dataset-builder` | datasets (list, build, images, export, delete) |
+| `sales-kit:theme:list` (JSON: `themes`, and the `headers` of `HeaderLayout::all()`), `sales-kit:theme:header` | thin `#[AsApi]` tasks over `ThemeBundle::pickable()` and `sylius:theme:header` |
 | Every theme installed with the theme-bundle target (`castor sylius:theme:setup all --target=theme-bundle`) | the theme picker |
 | The `.castor/import/var`, `.castor/import/exports` and `.castor/import/datasets` directories, mounted in the admin | shop images and `project.yaml`, run progress, dataset zips, catalogs of the datasets it built (read only) |
 
